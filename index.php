@@ -151,7 +151,7 @@
                 <li class="relative group">
                     <a href="#" class="cursor-pointer">Portal Access</a>
                     <ul class="absolute left-0 mt-2 w-48 bg-grey shadow-lg rounded-lg hidden group-hover:block">
-                        <li><a href="company_owner.php" class="block px-4 py-2 hover:bg-gray-200">Quiz Portal</a></li>
+                        <li><a href="./CEE/" class="block px-4 py-2 hover:bg-gray-200">Quiz Portal</a></li>
                         <li><a href="employee_login.php" class="block px-4 py-2 hover:bg-gray-200">Cybertron Employee</a></li>
                     </ul>
                 </li> 
