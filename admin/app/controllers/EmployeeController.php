@@ -1,5 +1,10 @@
 <?php
 class EmployeeController extends Controller {
+
+      public function index() {
+        // Redirect to viewAll or directly call it
+        $this->viewAll();
+    }
     public function create() {
         $model = $this->model('Employee');
         $departments = $model->getDepartments();
