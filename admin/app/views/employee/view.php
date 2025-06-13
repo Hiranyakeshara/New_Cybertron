@@ -38,6 +38,12 @@
                   <a href="/New_Cybertron/admin/app/controllers/pushEmployeeToQuiz.php?id=<?= $emp['id'] ?>"
    class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-sm">
    Add to Quiz Platform
+   <?php if (isset($_GET['exists'])): ?>
+    <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4 rounded">
+        ⚠️ This employee is already added to the Quiz platform.
+    </div>
+<?php endif; ?>
+
 </a>
 
                 </td>
