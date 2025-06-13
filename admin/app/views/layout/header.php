@@ -32,9 +32,9 @@
                 </button>
                 
                 <!-- Dropdown Menu -->
-                <div class="absolute right-0 mt-2 w-48 bg-white text-black border border-gray-300 rounded-md shadow-lg hidden" id="admin-dropdown">
-                    <a href="/New_Cybertron/admin/public/admin/logout" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Logout</a>
-                </div>
+              <a href="/New_Cybertron/admin/public/logout" 
+   class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Logout</a>
+
             </div>
         </div>
     </header>

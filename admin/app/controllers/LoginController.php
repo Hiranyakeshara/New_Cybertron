@@ -3,7 +3,9 @@
 class LoginController extends Controller {
 
     public function __construct() {
-        session_start(); // Start session to store login info
+      if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+} // Start session to store login info
     }
 
     public function index() {
