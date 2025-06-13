@@ -2,16 +2,22 @@
 <?php include_once __DIR__ . '/../layout/sidebar.php'; ?>
 
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 if (isset($_SESSION['message'])) {
     $type = $_SESSION['message_type'] ?? 'info';
+
     $bg = match ($type) {
         'success' => 'bg-green-100 border-green-500 text-green-700',
         'warning' => 'bg-yellow-100 border-yellow-500 text-yellow-700',
         'error'   => 'bg-red-100 border-red-500 text-red-700',
         default   => 'bg-blue-100 border-blue-500 text-blue-700',
     };
+
     echo "<div class='border-l-4 p-4 mb-4 rounded $bg'>" . htmlspecialchars($_SESSION['message']) . "</div>";
+
     unset($_SESSION['message'], $_SESSION['message_type']);
 }
 ?>
@@ -55,10 +61,6 @@ if (isset($_SESSION['message'])) {
                     <a href="/New_Cybertron/admin/app/controllers/pushEmployeeToQuiz.php?id=<?= $emp['id'] ?>"
                        class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-sm">
                        Add to Quiz Platform
-
-   
-?>
-
                     </a>
 
                 </td>
