@@ -1,6 +1,12 @@
 <?php include_once __DIR__ . '/../layout/header.php'; ?>
 <?php include_once __DIR__ . '/../layout/sidebar.php'; ?>
 
+  <?php if (isset($_GET['exists'])): ?>
+    <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4 rounded">
+        ⚠️ This employee is already added to the Quiz platform.
+    </div>
+<?php endif; ?>
+
 <div class="flex-1 p-10 bg-gray-50">
     <div class="bg-white rounded-lg shadow-md p-6">
         <h2 class="text-2xl font-bold text-gray-800 mb-4">👥 All Employees</h2>
@@ -38,11 +44,7 @@
                   <a href="/New_Cybertron/admin/app/controllers/pushEmployeeToQuiz.php?id=<?= $emp['id'] ?>"
    class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-sm">
    Add to Quiz Platform
-   <?php if (isset($_GET['exists'])): ?>
-    <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4 rounded">
-        ⚠️ This employee is already added to the Quiz platform.
-    </div>
-<?php endif; ?>
+ 
 
 </a>
 
