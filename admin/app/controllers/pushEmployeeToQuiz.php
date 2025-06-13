@@ -13,7 +13,20 @@ if (isset($_GET['id'])) {
     $employee = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($employee) {
-        // Step 2: Insert into examinee_tbl in cee_db
+        $employeeEmail = $employee['email'];
+
+        // Step 2: Check if already exists in cee_db.examinee_tbl
+        $checkStmt = $quizPdo->prepare("SELECT COUNT(*) FROM examinee_tbl WHERE exmne_email = ?");
+        $checkStmt->execute([$employeeEmail]);
+        $exists = $checkStmt->fetchColumn();
+
+        if ($exists > 0) {
+            // Already exists
+            header("Location: /New_Cybertron/admin/public/employee/viewAll?exists=1");
+            exit();
+        }
+
+        // Step 3: Insert into examinee_tbl in cee_db
         $insertStmt = $quizPdo->prepare("
             INSERT INTO examinee_tbl (
                 exmne_fullname,
@@ -27,13 +40,13 @@ if (isset($_GET['id'])) {
         ");
 
         $insertStmt->execute([
-            $employee['name'],             // fullname
-            $employee['department_id'],    // course (just mapping department)
-            '',                            // gender (optional)
-            '',                            // birthdate (optional)
-            '',                            // year level (optional)
-            $employee['email'],            // email
-            $employee['password'] ?? '123456'  // default password if missing
+            $employee['name'],             // Fullname
+            $employee['department_id'],    // Course ID
+            '',                            // Gender
+            '',                            // Birthdate
+            '',                            // Year Level
+            $employee['email'],            // Email
+            $employee['password'] ?? '123456'  // Password or fallback
         ]);
 
         header("Location: /New_Cybertron/admin/public/employee/viewAll?success=1");
