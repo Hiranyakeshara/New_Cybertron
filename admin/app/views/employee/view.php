@@ -1,11 +1,22 @@
 <?php include_once __DIR__ . '/../layout/header.php'; ?>
 <?php include_once __DIR__ . '/../layout/sidebar.php'; ?>
 
-  <?php if (isset($_GET['exists'])): ?>
-    <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4 rounded">
-        ⚠️ This employee is already added to the Quiz platform.
-    </div>
-<?php endif; ?>
+<?php
+session_start();
+if (isset($_SESSION['message'])) {
+    $type = $_SESSION['message_type'] ?? 'info';
+    $bg = match ($type) {
+        'success' => 'bg-green-100 border-green-500 text-green-700',
+        'warning' => 'bg-yellow-100 border-yellow-500 text-yellow-700',
+        'error'   => 'bg-red-100 border-red-500 text-red-700',
+        default   => 'bg-blue-100 border-blue-500 text-blue-700',
+    };
+    echo "<div class='border-l-4 p-4 mb-4 rounded $bg'>" . htmlspecialchars($_SESSION['message']) . "</div>";
+    unset($_SESSION['message'], $_SESSION['message_type']);
+}
+?>
+
+
 
 <div class="flex-1 p-10 bg-gray-50">
     <div class="bg-white rounded-lg shadow-md p-6">
@@ -41,12 +52,14 @@
                     <a href="delete_employee.php?id=<?= $emp['id'] ?>"
                        class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm"
                        onclick="return confirm('Are you sure you want to delete this employee?');">Delete</a>
-                  <a href="/New_Cybertron/admin/app/controllers/pushEmployeeToQuiz.php?id=<?= $emp['id'] ?>"
-   class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-sm">
-   Add to Quiz Platform
- 
+                    <a href="/New_Cybertron/admin/app/controllers/pushEmployeeToQuiz.php?id=<?= $emp['id'] ?>"
+                       class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-sm">
+                       Add to Quiz Platform
 
-</a>
+   
+?>
+
+                    </a>
 
                 </td>
             </tr>

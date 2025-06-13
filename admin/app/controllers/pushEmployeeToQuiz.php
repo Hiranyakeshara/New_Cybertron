@@ -1,13 +1,14 @@
 <?php
-require_once __DIR__ . '/config/db.php';        // cybertraining DB
-require_once __DIR__ . '/config/quiz_db.php';   // cee_db
+session_start();  // Start session for flash message support
+
+require_once __DIR__ . '/config/db.php';
+require_once __DIR__ . '/config/quiz_db.php';
 
 global $pdo, $quizPdo;
 
 if (isset($_GET['id'])) {
     $employeeId = intval($_GET['id']);
 
-    // Step 1: Fetch employee data from cybertraining DB
     $stmt = $pdo->prepare("SELECT * FROM employees WHERE id = ?");
     $stmt->execute([$employeeId]);
     $employee = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -15,45 +16,47 @@ if (isset($_GET['id'])) {
     if ($employee) {
         $employeeEmail = $employee['email'];
 
-        // Step 2: Check if already exists in cee_db.examinee_tbl
         $checkStmt = $quizPdo->prepare("SELECT COUNT(*) FROM examinee_tbl WHERE exmne_email = ?");
         $checkStmt->execute([$employeeEmail]);
         $exists = $checkStmt->fetchColumn();
 
         if ($exists > 0) {
-            // Already exists
-            header("Location: /New_Cybertron/admin/public/employee/viewAll?exists=1");
-            exit();
+            $_SESSION['message'] = '⚠️ This employee is already added to the Quiz platform.';
+            $_SESSION['message_type'] = 'warning';
+        } else {
+            $insertStmt = $quizPdo->prepare("
+                INSERT INTO examinee_tbl (
+                    exmne_fullname, exmne_course, exmne_gender,
+                    exmne_birthdate, exmne_year_level,
+                    exmne_email, exmne_password
+                ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            ");
+
+            $insertStmt->execute([
+                $employee['name'],
+                $employee['department_id'],
+                '',
+                '',
+                '',
+                $employee['email'],
+                $employee['password'] ?? '123456'
+            ]);
+
+            $_SESSION['message'] = '✅ Employee successfully added to Quiz platform.';
+            $_SESSION['message_type'] = 'success';
         }
 
-        // Step 3: Insert into examinee_tbl in cee_db
-        $insertStmt = $quizPdo->prepare("
-            INSERT INTO examinee_tbl (
-                exmne_fullname,
-                exmne_course,
-                exmne_gender,
-                exmne_birthdate,
-                exmne_year_level,
-                exmne_email,
-                exmne_password
-            ) VALUES (?, ?, ?, ?, ?, ?, ?)
-        ");
-
-        $insertStmt->execute([
-            $employee['name'],             // Fullname
-            $employee['department_id'],    // Course ID
-            '',                            // Gender
-            '',                            // Birthdate
-            '',                            // Year Level
-            $employee['email'],            // Email
-            $employee['password'] ?? '123456'  // Password or fallback
-        ]);
-
-        header("Location: /New_Cybertron/admin/public/employee/viewAll?success=1");
+        header("Location: /New_Cybertron/admin/public/employee/viewAll.php");
         exit();
     } else {
-        echo "❌ Employee not found.";
+        $_SESSION['message'] = '❌ Employee not found.';
+        $_SESSION['message_type'] = 'error';
+        header("Location: /New_Cybertron/admin/public/employee/viewAll.php");
+        exit();
     }
 } else {
-    echo "❌ Invalid request.";
+    $_SESSION['message'] = '❌ Invalid request.';
+    $_SESSION['message_type'] = 'error';
+    header("Location: /New_Cybertron/admin/public/employee/viewAll.php");
+    exit();
 }
