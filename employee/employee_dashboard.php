@@ -1,128 +1,70 @@
 <?php
 session_start();
-
-// Check if the user is logged in
 if (!isset($_SESSION['employee_id'])) {
     header("Location: employee_login.php");
     exit();
 }
 
-include_once("db/config.php");
+// Session info
+$emp_name  = $_SESSION['username'];
+$emp_email = $_SESSION['employee_email'];
 
-// Fetch session data
-$emp_id = $_SESSION["employee_id"];
-$emp_name = $_SESSION["username"];
-$emp_email = $_SESSION["employee_email"];
+// Fetch cybersecurity news using Newsdata.io API
+$newsData = [];
+$newsApiKey = 'pub_455615c3c213429ca9b287c0f7d0a3b3';
+$newsUrl = "https://newsdata.io/api/1/news?apikey=$newsApiKey&q=cybersecurity&language=en&category=technology";
 
+if ($res = @file_get_contents($newsUrl)) {
+    $parsed = json_decode($res, true);
+    if (isset($parsed['results'])) {
+        $newsData = array_slice($parsed['results'], 0, 5);
+    }
+}
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>CyberTrone - Employee Dashboard</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <style>
-        body {
-            background-color: #1F2937;
-            font-family: 'Arial', sans-serif;
-            display: flex;
-            height: 100vh;
-        }
-        .header-nav {
-            background-color: #111827;
-        }
-        .header-nav a {
-            text-transform: uppercase;
-            color: #fff;
-            padding: 10px 20px;
-            transition: color 0.3s ease;
-        }
-        .header-nav a:hover {
-            color: #10B981;
-        }
-        .cta-button {
-            background-color: #10B981;
-            color: white;
-            padding: 12px 24px;
-            text-transform: uppercase;
-            font-weight: bold;
-            border-radius: 30px;
-            margin-top: 20px;
-            transition: background-color 0.3s ease;
-        }
-        .cta-button:hover {
-            background-color: #047857;
-        }
-        .card h3 { color: #fff; }
-        .card p { color: #A0AEC0; }
-        .footer {
-            background-color: #111827;
-            color: #fff;
-            padding: 40px 0;
-            text-align: center;
-        }
-        .footer a {
-            color: #10B981;
-            text-decoration: none;
-        }
-        .sidebar {
-            background-color: #2D3748;
-            width: 250px;
-            height: 100vh;
-            position: fixed;
-            top: 0;
-            left: 0;
-            padding-top: 20px;
-        }
-        .sidebar a {
-            color: #fff;
-            display: block;
-            padding: 15px;
-            text-transform: uppercase;
-            font-weight: bold;
-            text-decoration: none;
-            transition: background-color 0.3s ease;
-        }
-        .sidebar a:hover {
-            background-color: #10B981;
-        }
-        .content {
-            margin-left: 250px;
-            padding: 20px;
-            width: 100%;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>CyberTrone - News Feed</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body>
+<body class="bg-gray-900 text-white">
 
-<?php include_once("./include/employee_sidebar.php"); ?>
+  <?php include "./include/employee_sidebar.php"; ?>
 
-<div class="content">
-    <header class="header-nav sticky top-0 z-10">
-        <div class="max-w-full mx-auto px-6 py-4 flex justify-between items-center">
-            <a href="#" class="text-3xl font-bold text-white">CyberTrone</a>
-            <span class="company-name text-white">User: <?php echo htmlspecialchars($emp_name); ?> | Email: <?php echo htmlspecialchars($emp_email); ?></span>
-        </div>
+  <div class="content p-6 space-y-10">
+    <header class="text-center py-4">
+      <h1 class="text-4xl font-bold">Welcome, <?= htmlspecialchars($emp_name) ?></h1>
+      <p class="text-gray-400"><?= htmlspecialchars($emp_email) ?></p>
     </header>
 
-    <div class="container mx-auto mt-10">
-        <!-- Total Participate Score -->
-        <div class="card bg-gray-800 text-white p-6 mb-6 rounded-lg">
-            <h3 class="text-xl font-semibold">Sample Data</h3>
+    <!-- Today's Cybersecurity News -->
+    <section class="bg-gray-800 p-6 rounded-lg shadow">
+      <h2 class="text-2xl font-semibold mb-4">🔐 Latest Cybersecurity News</h2>
+      <?php if (empty($newsData)): ?>
+        <p class="text-gray-300">Unable to fetch news currently.</p>
+      <?php else: ?>
+        <ul class="space-y-4">
+          <?php foreach ($newsData as $article): ?>
+            <li class="border-b border-gray-700 pb-4">
+              <a href="<?= htmlspecialchars($article['link']) ?>" target="_blank" class="text-blue-400 font-medium">
+                <?= htmlspecialchars($article['title']) ?>
+              </a>
+              <p class="text-sm text-gray-400 mt-1">
+                <?= isset($article['source_id']) ? htmlspecialchars($article['source_id']) : 'Unknown Source' ?>
+                | <?= htmlspecialchars(date('F j, Y', strtotime($article['pubDate']))) ?>
+              </p>
+              <p class="text-gray-300 text-sm mt-2">
+                <?= htmlspecialchars($article['description']) ?>
+              </p>
+            </li>
+          <?php endforeach; ?>
+        </ul>
+      <?php endif; ?>
+    </section>
+  </div>
 
-        </div>
-
-        <!-- My Score -->
-        <div class="card bg-gray-800 text-white p-6 rounded-lg">
-            <h3 class="text-xl font-semibold">Sample Data</h3>
-       
-        </div>
-
-        <!-- Rank -->
-        <div class="card bg-gray-800 text-white p-6 rounded-lg mt-6">
-            <h3 class="text-xl font-semibold">Sample Data</h3>
-         
-        </div>
-    </div>
+</body>
+</html>
