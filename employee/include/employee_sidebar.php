@@ -124,7 +124,7 @@
     <a href="performance.php">Performance</a>
     <a href="emp_email.php">Email Campaigns</a>
    <a href="emp_settings.php">Settings</a> 
-   <a href="emp_settings.php">Access Quize Platform</a>
+   <a href="../CEE">Access Quize Platform</a>
     <a href="emp_logout.php">Logout</a>
    
 </div>
