@@ -44,14 +44,14 @@
           📢 Email Campaigns
         </button>
         <div x-show="open" class="pl-4 mt-1 space-y-1" x-transition>
-          <a href="/New_Cybertron/admin/public/campaigns/create" class="block py-2 px-4 rounded hover:bg-gray-600">📤 Create Campaign</a>
-          <a href="/New_Cybertron/admin/public/campaigns/results" class="block py-2 px-4 rounded hover:bg-gray-600">📈 View Results</a>
-          <a href="/New_Cybertron/admin/public/campaigns/responses" class="block py-2 px-4 rounded hover:bg-gray-600">💬 View Responses</a>
+         
+          <a href="/New_Cybertron/admin/public/campaigns/" class="block py-2 px-4 rounded hover:bg-gray-600">📈 View Results</a>
+         
         </div>
       </div>
 
       <!-- User Feedback -->
-      <a href="/New_Cybertron/admin/public/feedback" class="block py-2 px-4 bg-gray-800 rounded-lg hover:bg-gray-600">🗣️ User Feedback</a>
+      <a href="/New_Cybertron/admin/public/feedback/" class="block py-2 px-4 bg-gray-800 rounded-lg hover:bg-gray-600">🗣️ User Feedback</a>
 
       <!-- Settings -->
       <a href="/New_Cybertron/admin/public/settings" class="block py-2 px-4 bg-gray-800 rounded-lg hover:bg-gray-600">⚙️ Settings</a>
@@ -62,8 +62,8 @@
           📝 Quiz Making Portal
         </button>
         <div x-show="openQuiz" class="pl-4 mt-1 space-y-1" x-transition>
-          <a href="/New_Cybertron/admin/public/quiz/create" class="block py-2 px-4 rounded hover:bg-gray-600">➕ Create Quiz</a>
-          <a href="/New_Cybertron/admin/public/quiz/viewAll" class="block py-2 px-4 rounded hover:bg-gray-600">📘 View Quizzes</a>
+          <a href="/New_Cybertron/CEE/adminpanel/" class="block py-2 px-4 rounded hover:bg-gray-600">➕ Access QuizPlatform</a>
+          <a href="/New_Cybertron/admin/public/quiz/" class="block py-2 px-4 rounded hover:bg-gray-600">📘 View Quiz Results</a>
         </div>
       </div>
     </nav>

@@ -12,17 +12,11 @@
         <div class="flex items-center gap-3">
             <img src="https://img.icons8.com/fluency/48/security-checked.png" class="w-8 h-8" alt="Logo">
             <h1 class="text-xl font-bold text-gray-800">
-                <a href="/cyber-training-platform/public/admin/dashboard" class="hover:text-indigo-600">Cybertron Admin Panel</a>
+                <a href="/New_Cybertron/admin/public/admin/dashboard" class="hover:text-indigo-600">Cybertron Admin Panel</a>
             </h1>
         </div>
         <div class="flex items-center gap-6">
-            <!-- Notification Bell -->
-            <div class="relative">
-                <svg class="w-6 h-6 text-gray-700 hover:text-gray-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-5-5.917V4a2 2 0 10-4 0v1.083A6 6 0 004 11v3.159c0 .538-.214 1.055-.595 1.436L2 17h5m7 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
-                </svg>
-                <span class="absolute top-0 right-0 block w-2 h-2 bg-red-600 rounded-full"></span>
-            </div>
+          
 
             <!-- Admin Avatar and Dropdown -->
             <div class="relative">
@@ -32,9 +26,9 @@
                 </button>
                 
                 <!-- Dropdown Menu -->
-                <div class="absolute right-0 mt-2 w-48 bg-white text-black border border-gray-300 rounded-md shadow-lg hidden" id="admin-dropdown">
-                    <a href="/New_Cybertron/admin/public/admin/logout" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Logout</a>
-                </div>
+              <a href="/New_Cybertron/admin/public/logout" 
+   class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Logout</a>
+
             </div>
         </div>
     </header>

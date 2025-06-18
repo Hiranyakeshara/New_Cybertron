@@ -14,4 +14,9 @@ class Database {
             die($e->getMessage());
         }
     }
+
+    public function connect() {
+    return $this->dbh;
+}
+
 }
