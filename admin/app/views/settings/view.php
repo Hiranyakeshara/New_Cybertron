@@ -162,13 +162,9 @@
                 <tr>
                     <td>Admin</td>
                     <td>admin</td>
-                    <td>admin</td>
-                </tr>
-                <tr>
-                    <td>Employee</td>
-                    <td>admin1234</td>
                     <td>admin1234</td>
                 </tr>
+           
             </tbody>
         </table>
         <p class="note">⚠️ For security reasons, please change default credentials after first login.</p>
