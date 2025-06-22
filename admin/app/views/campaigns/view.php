@@ -6,7 +6,7 @@
 
 <?php
 // Replace with your actual API key
-$apiKey = "73e36a34a53a67ab72197f2c3a4616426ec61ada162d242c87a69d7baae14552";
+$apiKey = "ddb5949962c39c5955beb2d9fc942c6593d6fc1899cd8bc4946d07572a9212dd";
 $gophishUrl = "https://localhost:3333/api/campaigns/"; // trailing slash is fine
 
 $headers = [
