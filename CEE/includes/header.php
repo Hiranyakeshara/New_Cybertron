@@ -21,7 +21,14 @@
     <div class="app-container app-theme-white body-tabs-shadow fixed-sidebar fixed-header">
         <div class="app-header header-shadow">
             <div class="app-header__logo">
-                <a href="home.php"><div> Cybertrone | Social Engineering Quiz</div></a>
+ <a href="home.php" class="navbar-brand" style="text-decoration: none;">
+  <span style="background-color: #212529; color: #fff; padding: 6px 14px; border-radius: 6px; font-size: 16px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px;">
+    <i class="fas fa-shield-alt"></i>
+    Cybertrone
+  </span>
+</a>
+
+
                 <div class="header__pane ml-auto">
                     <div>
                         <button type="button" class="hamburger close-sidebar-btn hamburger--elastic" data-class="closed-sidebar">
@@ -54,6 +61,11 @@
                    
                    
                           </div>
+
+                            <!-- New middle banner -->
+    <div class="app-header-middle" style="flex-grow: 1; text-align: center; font-weight: 700; font-size: 18px; color: #333;">
+        Social Engineering Awareness Platform
+    </div>
                 <div class="app-header-right">
                     <div class="header-btn-lg pr-0">
                         <div class="widget-content p-0">

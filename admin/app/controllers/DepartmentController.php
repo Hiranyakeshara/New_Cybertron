@@ -42,7 +42,7 @@ class DepartmentController extends Controller {
             $_SESSION['message_type'] = 'error';
         }
 
-        header('Location: /New_Cybertron/admin/public/department/view');
+        header('Location: /New_Cybertron/admin/public/department/viewDepartments');
         exit;
     }
 }
