@@ -48,6 +48,7 @@ class DepartmentController extends Controller {
 }
 
 
+
     // ✅ Rename this method to avoid overriding base view() method
     public function viewDepartments() {
         $model = $this->model('Department');
