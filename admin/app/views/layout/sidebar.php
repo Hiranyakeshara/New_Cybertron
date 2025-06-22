@@ -54,7 +54,7 @@
       <a href="/New_Cybertron/admin/public/feedback/" class="block py-2 px-4 bg-gray-800 rounded-lg hover:bg-gray-600">🗣️ User Feedback</a>
 
       <!-- Settings -->
-      <a href="/New_Cybertron/admin/public/settings" class="block py-2 px-4 bg-gray-800 rounded-lg hover:bg-gray-600">⚙️ Settings</a>
+      <a href="/New_Cybertron/admin/public/settings" class="block py-2 px-4 bg-gray-800 rounded-lg hover:bg-gray-600">⚙️ Software Version</a>
 
       <!-- New Quiz Making Portal -->
       <div x-data="{ openQuiz: false }">
