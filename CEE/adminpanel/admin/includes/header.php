@@ -24,7 +24,7 @@
         <div class="app-header header-shadow">
             <div class="app-header__logo">
 
-                <a href="home.php"><div> Security Awareness Training</div></a>
+                <a href="home.php"><div> Cybertrone | Social Engineering Quiz</div></a>
                 <div class="header__pane ml-auto">
                     <div>
                         <button type="button" class="hamburger close-sidebar-btn hamburger--elastic" data-class="closed-sidebar">
