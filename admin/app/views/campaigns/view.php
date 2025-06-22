@@ -1,72 +1,122 @@
 <?php include_once __DIR__ . '/../layout/header.php'; ?>
 <?php include_once __DIR__ . '/../layout/sidebar.php'; ?>
 
-<div class="p-6">
-    <h1 class="text-2xl font-bold mb-4">📧 Gophish Campaign Dashboard</h1>
+<div class="p-6 bg-gray-100 min-h-screen">
+    <div class="text-center mb-8">
+        <h1 class="text-4xl font-extrabold text-blue-900">📧 CyberTrone Campaign Dashboard</h1>
+        <p class="text-gray-600 text-md italic">Real-time phishing campaign analytics</p>
+    </div>
 
 <?php
-// Replace with your actual API key
-$apiKey = "ddb5949962c39c5955beb2d9fc942c6593d6fc1899cd8bc4946d07572a9212dd";
-$gophishUrl = "https://localhost:3333/api/campaigns/"; // trailing slash is fine
+$apiKey = "3bfca2468a7982f81288b76af71d16e3005b5b294792efa9ea0990fb9e449fcb";
+$gophishBaseUrl = "https://localhost:3333/api/campaigns/";
 
 $headers = [
     "Authorization: Bearer $apiKey",
     "Content-Type: application/json"
 ];
 
+// Fetch all campaigns
 $ch = curl_init();
-curl_setopt($ch, CURLOPT_URL, $gophishUrl);
+curl_setopt($ch, CURLOPT_URL, $gophishBaseUrl);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // dev only
+curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-
 $response = curl_exec($ch);
 $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 curl_close($ch);
 
 $campaigns = json_decode($response, true);
 
-// Display error if failed
 if ($httpCode !== 200 || !is_array($campaigns)) {
-    echo "<p class='text-red-500 font-semibold'>⚠️ Failed to fetch campaign data. HTTP Code: $httpCode</p>";
-    echo "<pre class='text-xs text-red-400 bg-red-50 p-2 border border-red-300 rounded'>" . htmlspecialchars($response) . "</pre>";
-} else {
+    echo "<div class='text-red-600 text-center font-semibold'>⚠️ Failed to retrieve campaign data (HTTP $httpCode)</div>";
+    exit;
+}
 ?>
 
-<!-- Table -->
-<div class="overflow-x-auto">
-    <table class="table-auto w-full border-collapse border border-gray-300 mt-4">
-        <thead class="bg-gray-100">
-            <tr>
-                <th class="border px-4 py-2">Campaign Name</th>
-                <th class="border px-4 py-2">Status</th>
-                <th class="border px-4 py-2">Emails Sent</th>
-                <th class="border px-4 py-2">Emails Opened</th>
-                <th class="border px-4 py-2">Clicked</th>
-                <th class="border px-4 py-2">Reported</th>
-            </tr>
-        </thead>
-        <tbody>
-        <?php foreach ($campaigns as $campaign): 
-            $sent = count($campaign['results']);
-            $opened = count(array_filter($campaign['results'], fn($r) => $r['status'] === 'Opened'));
-            $clicked = count(array_filter($campaign['results'], fn($r) => $r['status'] === 'Clicked'));
-            $reported = count(array_filter($campaign['results'], fn($r) => $r['status'] === 'Reported'));
-        ?>
-            <tr class="bg-white hover:bg-gray-100">
-                <td class="border px-4 py-2"><?= htmlspecialchars($campaign['name']) ?></td>
-                <td class="border px-4 py-2"><?= htmlspecialchars($campaign['status']) ?></td>
-                <td class="border px-4 py-2"><?= $sent ?></td>
-                <td class="border px-4 py-2"><?= $opened ?></td>
-                <td class="border px-4 py-2"><?= $clicked ?></td>
-                <td class="border px-4 py-2"><?= $reported ?></td>
-            </tr>
-        <?php endforeach; ?>
-        </tbody>
-    </table>
-</div>
+<div class="grid grid-cols-1 gap-6">
+<?php foreach ($campaigns as $campaign): 
+    $campaignId = $campaign['id'];
+    $campaignName = htmlspecialchars($campaign['name']);
+    $campaignStatus = htmlspecialchars($campaign['status']);
 
-<?php } ?>
+    // Get campaign results
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $gophishBaseUrl . $campaignId . "/results");
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+    $resultResponse = curl_exec($ch);
+    curl_close($ch);
+
+    $sent = $opened = $clicked = $reported = $submitted = 0;
+    $userRows = "";
+
+    if ($resultResponse) {
+        $campaignResults = json_decode($resultResponse, true);
+
+        if (isset($campaignResults['results'])) {
+            foreach ($campaignResults['results'] as $entry) {
+                $sent++;
+                $status = $entry['status'] ?? 'N/A';
+                $email = htmlspecialchars($entry['email']);
+                $ip = htmlspecialchars($entry['ip'] ?? '-');
+                $sentTime = date("Y-m-d H:i", strtotime($entry['send_date']));
+                $modifiedTime = date("Y-m-d H:i", strtotime($entry['modified_date']));
+                $rowColor = "";
+
+                // Count statuses
+                if ($status === "Email Opened") $opened++;
+                if ($status === "Clicked Link") {
+                    $clicked++;
+                    $rowColor = "bg-yellow-100";
+                }
+                if ($status === "Submitted Data") {
+                    $submitted++;
+                    $rowColor = "bg-red-100";
+                }
+                if (!empty($entry['reported'])) $reported++;
+
+                $userRows .= "<tr class='border-b hover:bg-gray-50 $rowColor'>
+                    <td class='px-3 py-2'>$email</td>
+                    <td class='px-3 py-2'>$status</td>
+                    <td class='px-3 py-2'>$ip</td>
+                    <td class='px-3 py-2'>$sentTime</td>
+                    <td class='px-3 py-2'>$modifiedTime</td>
+                </tr>";
+            }
+        }
+    }
+?>
+    <div class="bg-white rounded shadow-lg p-4">
+        <h2 class="text-xl font-bold text-blue-800 mb-2">📌 <?= $campaignName ?> <span class="text-sm text-gray-500">(<?= $campaignStatus ?>)</span></h2>
+        <div class="grid grid-cols-5 text-center text-sm text-gray-700">
+            <div><strong>Sent</strong><div class="text-xl text-blue-700"><?= $sent ?></div></div>
+            <div><strong>Opened</strong><div class="text-xl text-green-600"><?= $opened ?></div></div>
+            <div><strong>Clicked</strong><div class="text-xl text-yellow-600"><?= $clicked ?></div></div>
+            <div><strong>Submitted</strong><div class="text-xl text-red-600"><?= $submitted ?></div></div>
+            <div><strong>Reported</strong><div class="text-xl text-pink-600"><?= $reported ?></div></div>
+        </div>
+
+        <div class="overflow-x-auto mt-4">
+            <table class="min-w-full text-xs border">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="px-3 py-2 border">Email</th>
+                        <th class="px-3 py-2 border">Status</th>
+                        <th class="px-3 py-2 border">IP Address</th>
+                        <th class="px-3 py-2 border">Sent Time</th>
+                        <th class="px-3 py-2 border">Modified</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white">
+                    <?= $userRows ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+<?php endforeach; ?>
+</div>
 </div>
