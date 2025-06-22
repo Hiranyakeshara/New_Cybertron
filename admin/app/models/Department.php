@@ -12,7 +12,7 @@ class Department extends Database {
     }
 
     public function updateDepartment($id, $department_code, $department_name) {
-    $stmt = $this->db->prepare("UPDATE departments SET department_code = ?, department_name = ? WHERE id = ?");
+    $stmt = $this->dbh->prepare("UPDATE departments SET department_code = ?, department_name = ? WHERE id = ?");
     return $stmt->execute([$department_code, $department_name, $id]);
 }
 
