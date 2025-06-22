@@ -37,7 +37,45 @@ class EmployeeController extends Controller {
         ]);
     }
 
+    //employee update function
+ public function update() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $model = $this->model('Employee');
 
+            $data = [
+                'id' => $_POST['id'],
+                'name' => $_POST['name'],
+                'username' => $_POST['username'],
+                'nic' => $_POST['nic'],
+                'contact_number' => $_POST['contact_number'],
+                'email' => $_POST['email'],
+                'password' => $_POST['password'] ?? null
+            ];
+
+            if (empty($data['password'])) {
+                unset($data['password']);
+            }
+
+            $model->update($data);
+
+            $_SESSION['message'] = "Employee updated successfully!";
+            $_SESSION['message_type'] = "success";
+            header("Location: /New_Cybertron/admin/public/employee/viewAll");
+            exit;
+        }
+    }
+
+    //delete employee function
+    public function delete($id) {
+        $model = $this->model('Employee');
+        $model->delete($id);
+
+        $_SESSION['message'] = "Employee deleted.";
+        $_SESSION['message_type'] = "success";
+        header("Location: /New_Cybertron/admin/public/employee/viewAll");
+        exit;
+    }
+    
     public function viewAll() {
     $model = $this->model('Employee');
     $employees = $model->getAllWithDepartments();
