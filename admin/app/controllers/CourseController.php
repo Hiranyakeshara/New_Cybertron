@@ -56,6 +56,50 @@ class CourseController extends Controller {
         $this->view('course/view', ['courses' => $courses]);
     }
 
+    public function delete($id) {
+    $model = $this->model('Course');
+    $model->delete($id);
+    header("Location: /New_Cybertron/admin/public/course/viewAll?deleted=1");
+    exit;
+}
+
+//update course 
+public function update() {
+    $model = $this->model('Course');
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $id = $_POST['id'];
+        $data = [
+            'id' => $id,
+            'course_name' => $_POST['course_name'] ?? '',
+            'video_links' => $_POST['video_links'] ?? '',
+            'quiz_links' => $_POST['quiz_links'] ?? '',
+            'pdf_material' => $_FILES['pdf_material']['name'] ?? ''
+        ];
+
+        // Handle PDF upload if any
+        if (!empty($_FILES['pdf_material']['name'])) {
+            $targetDir = __DIR__ . '/../public/uploads/course_materials/';
+            $filename = basename($_FILES['pdf_material']['name']);
+            $targetFile = $targetDir . $filename;
+
+            if (move_uploaded_file($_FILES['pdf_material']['tmp_name'], $targetFile)) {
+                $data['pdf_material'] = $filename;
+            }
+        } else {
+            // fallback to previous file from DB
+            $existing = $model->getById($id);
+            $data['pdf_material'] = $existing['pdf_material'];
+        }
+
+        $model->update($data);
+        header("Location: /New_Cybertron/admin/public/course/viewAll?updated=1");
+        exit;
+    }
+}
+
+
+
     // Inside CourseController.php or a helper file
 public function getVideoEmbedUrl($url) {
     if (strpos($url, 'youtube.com') !== false || strpos($url, 'youtu.be') !== false) {
