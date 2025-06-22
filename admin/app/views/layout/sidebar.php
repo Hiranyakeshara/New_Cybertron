@@ -10,7 +10,7 @@
     class="bg-gradient-to-b from-gray-900 to-gray-700 text-white shadow-md transition-all duration-300 overflow-hidden flex-shrink-0"
   >
     <div class="p-4">
-      <h2 class="text-xl font-bold mb-6">🛡️ Cybertrone</h2>
+   
 
       <nav class="space-y-4">
         <!-- Departments -->
@@ -32,7 +32,7 @@
           <div x-show="open" class="pl-4 mt-1 space-y-1" x-transition>
             <a href="/New_Cybertron/admin/public/employee/create" class="block py-2 px-4 rounded hover:bg-gray-600">👤 Add Employee</a>
             <a href="/New_Cybertron/admin/public/employee/viewAll" class="block py-2 px-4 rounded hover:bg-gray-600">📄 View Employees</a>
-            <a href="/New_Cybertron/admin/public/performance" class="block py-2 px-4 rounded hover:bg-gray-600">📊 View Performance</a>
+            <a href="/New_Cybertron/admin/public/employee/performance" class="block py-2 px-4 rounded hover:bg-gray-600">📊 View Performance</a>
           </div>
         </div>
 

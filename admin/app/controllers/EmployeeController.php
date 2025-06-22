@@ -1,4 +1,8 @@
 <?php
+
+;
+
+
 class EmployeeController extends Controller {
 
       public function index() {
@@ -76,6 +80,16 @@ class EmployeeController extends Controller {
         exit;
     }
     
+    //view employee performance
+public function performance()
+{
+    require_once __DIR__ . '/../models/Quiz.php';
+    $quizModel = new Quiz();
+    $results = $quizModel->getResults();
+
+    $this->view('employee/performance', ['results' => $results]);
+}
+
     public function viewAll() {
     $model = $this->model('Employee');
     $employees = $model->getAllWithDepartments();
