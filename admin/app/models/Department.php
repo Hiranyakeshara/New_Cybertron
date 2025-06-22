@@ -10,4 +10,10 @@ class Department extends Database {
         $stmt = $this->dbh->query("SELECT * FROM departments");
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public function updateDepartment($id, $department_code, $department_name) {
+    $stmt = $this->db->prepare("UPDATE departments SET department_code = ?, department_name = ? WHERE id = ?");
+    return $stmt->execute([$department_code, $department_name, $id]);
+}
+
 }
