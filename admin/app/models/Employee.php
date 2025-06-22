@@ -18,6 +18,38 @@ class Employee extends Database {
         ]);
     }
 
+    //update employee details
+     public function update($data) {
+        if (!empty($data['password'])) {
+            $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
+            $sql = "UPDATE employees SET 
+                        name = :name,
+                        username = :username,
+                        nic = :nic,
+                        contact_number = :contact_number,
+                        email = :email,
+                        password = :password
+                    WHERE id = :id";
+        } else {
+            $sql = "UPDATE employees SET 
+                        name = :name,
+                        username = :username,
+                        nic = :nic,
+                        contact_number = :contact_number,
+                        email = :email
+                    WHERE id = :id";
+        }
+
+        $stmt = $this->dbh->prepare($sql);
+        $stmt->execute($data);
+    }
+
+    //delete employee details
+    public function delete($id) {
+        $stmt = $this->dbh->prepare("DELETE FROM employees WHERE id = ?");
+        $stmt->execute([$id]);
+    }
+
     public function getDepartments() {
         $stmt = $this->dbh->query("SELECT id, department_name FROM departments");
         return $stmt->fetchAll(PDO::FETCH_ASSOC);

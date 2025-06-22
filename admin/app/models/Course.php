@@ -44,6 +44,33 @@ public function getAllCourses() {
         }
     }
 
+    //delete course from the system
+    public function delete($id) {
+$stmt = $this->dbh->prepare("DELETE FROM courses WHERE id = ?");
+    $stmt->execute([$id]);
+}
+
+public function getById($id) {
+    $stmt = $this->dbh->prepare("SELECT * FROM courses WHERE id = :id");
+    $stmt->execute([':id' => $id]);
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
+//update course details
+public function update($data) {
+    $stmt = $this->dbh->prepare("UPDATE courses SET course_name = ?, pdf_material = ?, video_links = ?, quiz_links = ? WHERE id = ?");
+    $stmt->execute([
+        $data['course_name'],
+        $data['pdf_material'],
+        $data['video_links'],
+        $data['quiz_links'],
+        $data['id']
+    ]);
+}
+
+
+
+
     // Fetch all departments for the dropdown
     public function getAllDepartments() {
         $stmt = $this->dbh->query("SELECT id, department_name FROM departments");

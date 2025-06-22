@@ -5,7 +5,11 @@
     <title>Admin Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/alpinejs" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+
+
 </head>
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 <body class="bg-gray-100 font-sans antialiased">
     <!-- Admin Header -->
     <header class="bg-white shadow px-6 py-4 flex justify-between items-center">
