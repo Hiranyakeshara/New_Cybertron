@@ -24,6 +24,30 @@ class DepartmentController extends Controller {
         $this->view('department/create', $data);
     }
 
+    //update department 
+    public function update() {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $id = $_POST['id'];
+        $code = trim($_POST['department_code']);
+        $name = trim($_POST['department_name']);
+
+        $departmentModel = $this->model('Department');
+        $success = $departmentModel->updateDepartment($id, $code, $name);
+
+        if ($success) {
+            $_SESSION['message'] = 'Department updated successfully!';
+            $_SESSION['message_type'] = 'success';
+        } else {
+            $_SESSION['message'] = 'Update failed.';
+            $_SESSION['message_type'] = 'error';
+        }
+
+        header('Location: /New_Cybertron/admin/public/department/view');
+        exit;
+    }
+}
+
+
     // ✅ Rename this method to avoid overriding base view() method
     public function viewDepartments() {
         $model = $this->model('Department');
