@@ -1,85 +1,37 @@
 <?php
-/* ──────────────────────────────────────────────────────────────
- *  Cyber-Training Project Dashboard     (dashboard.php)
- *  ----------------------------------------------------------------
- *  Requires: PHP ≥ 7.4, PDO, Tailwind CDN, Chart.js CDN
- *  DB #1  : cybertraining   – employees, departments, courses …
- *  DB #2  : cee_db          – quizzes / exam tables …
- *  ----------------------------------------------------------------
- *  ⚠️  Replace the connection credentials ($dbUser/$dbPass) with
- *  ⚠️  those on your server OR pull them from ENV variables.
- * ────────────────────────────────────────────────────────────── */
+// dashboard_fetch.php - Glassmorphism-Styled Dashboard with Modern Look & Extra Charts
 
 $dbHost   = 'localhost';
 $dbUser   = 'root';
 $dbPass   = '';
-$ceeDB    = new PDO("mysql:host=$dbHost;dbname=cee_db;charset=utf8mb4",$dbUser,$dbPass,
-                    [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+$ceeDB    = new PDO("mysql:host=$dbHost;dbname=cee_db;charset=utf8mb4", $dbUser, $dbPass, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+$trainDB  = new PDO("mysql:host=$dbHost;dbname=cybertraining;charset=utf8mb4", $dbUser, $dbPass, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
 
-$trainDB  = new PDO("mysql:host=$dbHost;dbname=cybertraining;charset=utf8mb4",$dbUser,$dbPass,
-                    [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+$deptRows = $trainDB->query("SELECT d.id, d.department_name, COUNT(e.id) AS employee_cnt FROM departments d LEFT JOIN employees e ON e.department_id = d.id GROUP BY d.id")->fetchAll(PDO::FETCH_ASSOC);
+$totalDepts = count($deptRows);
+$totalEmployees = array_sum(array_column($deptRows, 'employee_cnt'));
 
-/* ------------------------------------------------------------
- *  1.  Departments & Employees
- * ---------------------------------------------------------- */
-$deptRows = $trainDB->query("
-    SELECT d.id,
-           d.department_name,
-           COUNT(e.id)                    AS employee_cnt
-    FROM   departments d
-    LEFT JOIN employees e ON e.department_id = d.id
-    GROUP BY d.id
-")->fetchAll(PDO::FETCH_ASSOC);
-
-$totalDepts     = count($deptRows);
-$totalEmployees = array_sum(array_column($deptRows,'employee_cnt'));
-
-/* ------------------------------------------------------------
- *  2.  Courses & Quizzes (mapped by department)
- * ---------------------------------------------------------- */
-$courseRows = $trainDB->query("
-    SELECT cd.department_id,
-           COUNT(cd.course_id)            AS course_cnt
-    FROM   course_departments cd
-    GROUP BY cd.department_id
-")->fetchAll(PDO::FETCH_KEY_PAIR);   // [dept_id => course_cnt]
-
-$quizRows = $ceeDB->query("
-    SELECT cou_id, COUNT(ex_id) AS quiz_cnt
-    FROM   exam_tbl
-    GROUP BY cou_id
-")->fetchAll(PDO::FETCH_KEY_PAIR);   // [cou_id => quiz_cnt]
-
+$courseRows = $trainDB->query("SELECT cd.department_id, COUNT(cd.course_id) AS course_cnt FROM course_departments cd GROUP BY cd.department_id")->fetchAll(PDO::FETCH_KEY_PAIR);
+$quizRows = $ceeDB->query("SELECT cou_id, COUNT(ex_id) AS quiz_cnt FROM exam_tbl GROUP BY cou_id")->fetchAll(PDO::FETCH_KEY_PAIR);
 $totalQuizzes = array_sum($quizRows);
 
-/* ------------------------------------------------------------
- *  3.  Completion – who tried at least one quiz? 
- * ---------------------------------------------------------- */
-$attempt = $ceeDB->query("
-    SELECT DISTINCT et.exmne_email
-    FROM   exam_attempt ea
-    JOIN   examinee_tbl et ON et.exmne_id = ea.exmne_id
-")->fetchAll(PDO::FETCH_COLUMN);             // unique emails
+$attempt = $ceeDB->query("SELECT DISTINCT et.exmne_email FROM exam_attempt ea JOIN examinee_tbl et ON et.exmne_id = ea.exmne_id")->fetchAll(PDO::FETCH_COLUMN);
+$attemptEmailSet = array_flip($attempt);
 
-$attemptEmailSet = array_flip($attempt);     // quick look-ups by email
 
-/* ------------------------------------------------------------
- *  4.  Department-level derived metrics & chart data
- * ---------------------------------------------------------- */
-$chartLabels   = [];
-$chartQuizzes  = [];
+
+$chartLabels = [];
+$chartQuizzes = [];
 $chartComplete = [];
+$chartCourses = [];
 
 foreach ($deptRows as &$d) {
-    $deptId   = $d['id'];
+    $deptId = $d['id'];
     $deptName = $d['department_name'];
-
-    // course & quiz counts
     $d['course_cnt'] = $courseRows[$deptId] ?? 0;
 
-    // Map department -> course name (same string in cee_db.course_tbl)
     $quizCnt = 0;
-    foreach ($quizRows as $couId => $qCnt) {   // naive map by name
+    foreach ($quizRows as $couId => $qCnt) {
         $couName = $ceeDB->prepare("SELECT cou_name FROM course_tbl WHERE cou_id=?");
         $couName->execute([$couId]);
         if (strtoupper($couName->fetchColumn()) === strtoupper($deptName)) {
@@ -88,145 +40,128 @@ foreach ($deptRows as &$d) {
     }
     $d['quiz_cnt'] = $quizCnt;
 
-    // completion ratio
     $empEmails = $trainDB->prepare("SELECT email FROM employees WHERE department_id=?");
     $empEmails->execute([$deptId]);
     $empEmails = $empEmails->fetchAll(PDO::FETCH_COLUMN);
 
     $done = 0;
     foreach ($empEmails as $em) if (isset($attemptEmailSet[$em])) $done++;
-    $d['completed_pct'] = $d['employee_cnt'] ? round($done*100/$d['employee_cnt'],1) : 0;
+    $d['completed_pct'] = $d['employee_cnt'] ? round($done * 100 / $d['employee_cnt'], 1) : 0;
 
-    /* push to chart arrays */
-    $chartLabels[]   = $deptName;
-    $chartQuizzes[]  = $d['quiz_cnt'];
+    $chartLabels[] = $deptName;
+    $chartQuizzes[] = $d['quiz_cnt'];
+    $chartCourses[] = $d['course_cnt'];
     $chartComplete[] = $d['completed_pct'];
 }
 unset($d);
 
-/* ------------------------------------------------------------
- *  5.  Latest quiz completions (10)
- * ---------------------------------------------------------- */
-$latest = $ceeDB->query("
-    SELECT ea.examat_id, ex.ex_title,
-           et.exmne_email, et.exmne_fullname,
-           ea.examat_id, ex.ex_created
-    FROM   exam_attempt ea
-    JOIN   exam_tbl  ex ON ex.ex_id  = ea.exam_id
-    JOIN   examinee_tbl et ON et.exmne_id = ea.exmne_id
-    ORDER  BY ea.examat_id DESC
-    LIMIT  10
-")->fetchAll(PDO::FETCH_ASSOC);
+$latest = $ceeDB->query("SELECT ea.examat_id, ex.ex_title, et.exmne_email, et.exmne_fullname, ea.examat_id, ex.ex_created FROM exam_attempt ea JOIN exam_tbl ex ON ex.ex_id = ea.exam_id JOIN examinee_tbl et ON et.exmne_id = ea.exmne_id ORDER BY ea.examat_id DESC LIMIT 10")->fetchAll(PDO::FETCH_ASSOC);
 
-/* helper to fetch dept name by email */
-$getDept = $trainDB->prepare("
-    SELECT d.department_name
-    FROM   employees e
-    JOIN   departments d ON d.id = e.department_id
-    WHERE  e.email = ?
-");
+$getDept = $trainDB->prepare("SELECT d.department_name FROM employees e JOIN departments d ON d.id = e.department_id WHERE e.email = ?");
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Cyber-Training Dashboard</title>
-<link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.1/dist/tailwind.min.css" rel="stylesheet">
+
+<style>
+.glass {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 12px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+</style>
+
+<div class="bg-gradient-to-br from-blue-50 to-white text-gray-900 min-h-screen p-6">
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6">
+    <div class="p-4 glass">
+      <p class="text-sm text-gray-700">Departments</p>
+      <p class="text-3xl font-bold text-purple-700"><?= $totalDepts ?></p>
+    </div>
+    <div class="p-4 glass">
+      <p class="text-sm text-gray-700">Employees</p>
+      <p class="text-3xl font-bold text-blue-700"><?= $totalEmployees ?></p>
+    </div>
+    <div class="p-4 glass">
+      <p class="text-sm text-gray-700">Courses</p>
+      <p class="text-3xl font-bold text-green-700"><?= array_sum($courseRows) ?></p>
+    </div>
+    <div class="p-4 glass">
+      <p class="text-sm text-gray-700">Quizzes</p>
+      <p class="text-3xl font-bold text-yellow-600"><?= $totalQuizzes ?></p>
+    </div>
+    <div class="p-4 glass">
+      <p class="text-sm text-gray-700">Completion</p>
+      <p class="text-3xl font-bold text-pink-600"><?= $totalEmployees ? round(count($attempt) * 100 / $totalEmployees, 1) : 0 ?>%</p>
+    </div>
+  
+  </div>
+
+  <h2 class="mt-10 text-2xl font-bold">Recent Quiz Completions</h2>
+  <div class="overflow-x-auto mt-4">
+    <table class="min-w-full glass text-sm">
+      <thead class="bg-white/80">
+        <tr>
+          <th class="px-4 py-2 text-left">Employee</th>
+          <th class="px-4 py-2 text-left">Department</th>
+          <th class="px-4 py-2 text-left">Quiz Title</th>
+          <th class="px-4 py-2 text-left">Date</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-300">
+        <?php foreach ($latest as $row):
+            $getDept->execute([$row['exmne_email']]);
+            $dept = $getDept->fetchColumn() ?: '—';
+        ?>
+        <tr class="hover:bg-white/60 transition">
+          <td class="px-4 py-2"><?= htmlspecialchars($row['exmne_fullname']) ?></td>
+          <td class="px-4 py-2"><?= htmlspecialchars($dept) ?></td>
+          <td class="px-4 py-2"><?= htmlspecialchars($row['ex_title']) ?></td>
+          <td class="px-4 py-2"><?= date('d M Y', strtotime($row['ex_created'])) ?></td>
+        </tr>
+        <?php endforeach; ?>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-14">
+    <div class="glass p-6">
+      <h3 class="text-lg font-semibold mb-4 text-purple-700">Quizzes per Department</h3>
+      <canvas id="quizChart" class="p-4"></canvas>
+    </div>
+    <div class="glass p-6">
+      <h3 class="text-lg font-semibold mb-4 text-pink-700">Completion Rate</h3>
+      <canvas id="completionChart" class="p-4"></canvas>
+    </div>
+    <div class="glass p-6">
+      <h3 class="text-lg font-semibold mb-4 text-green-700">Courses per Department</h3>
+      <canvas id="courseChart" class="p-4"></canvas>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body class="bg-gray-100 p-6">
-
-
-<!-- KPI CARDS -->
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-  <div class="p-4 bg-white rounded shadow">
-    <p class="text-sm text-gray-500">Departments</p>
-    <p class="text-3xl font-semibold"><?= $totalDepts ?></p>
-  </div>
-  <div class="p-4 bg-white rounded shadow">
-    <p class="text-sm text-gray-500">Employees</p>
-    <p class="text-3xl font-semibold"><?= $totalEmployees ?></p>
-  </div>
-  <div class="p-4 bg-white rounded shadow">
-    <p class="text-sm text-gray-500">Courses</p>
-    <p class="text-3xl font-semibold"><?= array_sum($courseRows) ?></p>
-  </div>
-  <div class="p-4 bg-white rounded shadow">
-    <p class="text-sm text-gray-500">Quizzes</p>
-    <p class="text-3xl font-semibold"><?= $totalQuizzes ?></p>
-  </div>
-  <div class="p-4 bg-white rounded shadow">
-    <p class="text-sm text-gray-500">Overall Completion</p>
-    <p class="text-3xl font-semibold">
-        <?= $totalEmployees ? round(count($attempt)*100/$totalEmployees,1) : 0 ?>%
-    </p>
-  </div>
-</div>
-
-<!-- RECENT COMPLETIONS -->
-<h2 class="mt-10 text-2xl font-bold">Latest Quiz Completions</h2>
-<div class="overflow-x-auto mt-4">
-<table class="min-w-full bg-white rounded shadow">
-  <thead class="bg-gray-50 text-left text-sm font-semibold">
-    <tr>
-      <th class="px-4 py-2">Employee</th>
-      <th class="px-4 py-2">Department</th>
-      <th class="px-4 py-2">Quiz Title</th>
-      <th class="px-4 py-2">Date</th>
-    </tr>
-  </thead>
-  <tbody class="divide-y">
-    <?php foreach ($latest as $row):
-        $getDept->execute([$row['exmne_email']]);
-        $dept = $getDept->fetchColumn() ?: '—';
-    ?>
-    <tr class="hover:bg-gray-50">
-      <td class="px-4 py-2"><?= htmlspecialchars($row['exmne_fullname']) ?></td>
-      <td class="px-4 py-2"><?= htmlspecialchars($dept) ?></td>
-      <td class="px-4 py-2"><?= htmlspecialchars($row['ex_title']) ?></td>
-      <td class="px-4 py-2"><?= date('d M Y',strtotime($row['ex_created'])) ?></td>
-    </tr>
-    <?php endforeach; ?>
-  </tbody>
-</table>
-</div>
-
-<!-- CHARTS -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-14">
-  <div class="bg-white p-6 rounded shadow">
-    <h3 class="text-lg font-semibold mb-4">Quizzes per Department</h3>
-    <canvas id="quizChart"></canvas>
-  </div>
-  <div class="bg-white p-6 rounded shadow">
-    <h3 class="text-lg font-semibold mb-4">Department Completion Rate</h3>
-    <canvas id="completionChart"></canvas>
-  </div>
-</div>
-
 <script>
-const labels      = <?= json_encode($chartLabels) ?>;
-const quizCounts  = <?= json_encode($chartQuizzes) ?>;
-const compRates   = <?= json_encode($chartComplete) ?>;
+const labels = <?= json_encode($chartLabels) ?>;
+const quizCounts = <?= json_encode($chartQuizzes) ?>;
+const compRates = <?= json_encode($chartComplete) ?>;
+const courseCounts = <?= json_encode($chartCourses) ?>;
 
-/* -- Bar: quizzes per department -- */
+Chart.defaults.color = "#374151";
+
 new Chart(document.getElementById('quizChart'), {
   type: 'bar',
-  data: { labels,
-          datasets:[{ label:'Quizzes', data:quizCounts }]},
-  options: { responsive:true, plugins:{legend:{display:false}} }
+  data: { labels, datasets: [{ label: 'Quizzes', data: quizCounts, backgroundColor: '#c084fc', borderColor: '#7c3aed', borderWidth: 1 }] },
+  options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
 });
 
-/* -- Doughnut: % completion -- */
 new Chart(document.getElementById('completionChart'), {
   type: 'doughnut',
-  data: { labels,
-          datasets:[{ data:compRates }]},
-  options: {
-     responsive:true,
-     plugins:{legend:{position:'bottom'}},
-     cutout:'50%'
-  }
+  data: { labels, datasets: [{ data: compRates, backgroundColor: ['#ec4899', '#8b5cf6', '#22d3ee', '#facc15', '#10b981', '#f87171', '#60a5fa', '#eab308'] }] },
+  options: { responsive: true, plugins: { legend: { position: 'bottom' } }, cutout: '50%' }
+});
+
+new Chart(document.getElementById('courseChart'), {
+  type: 'bar',
+  data: { labels, datasets: [{ label: 'Courses', data: courseCounts, backgroundColor: '#6ee7b7', borderColor: '#059669', borderWidth: 1 }] },
+  options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
 });
 </script>
-</body>
-</html>
