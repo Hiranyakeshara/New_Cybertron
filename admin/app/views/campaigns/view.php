@@ -8,7 +8,7 @@
     </div>
 
 <?php
-$apiKey = "fd4dfd17126c315eff9ba58415cb5511923065aa018791181bc82032c37003d3";
+$apiKey = "3bfca2468a7982f81288b76af71d16e3005b5b294792efa9ea0990fb9e449fcb";
 $gophishBaseUrl = "https://localhost:3333/api/campaigns/";
 
 $headers = [
