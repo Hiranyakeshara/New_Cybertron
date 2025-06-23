@@ -5,65 +5,74 @@ if (!isset($_SESSION['employee_id'])) {
     exit();
 }
 
-// Session info
+// Session user info
 $emp_name  = $_SESSION['username'];
 $emp_email = $_SESSION['employee_email'];
 
-// Fetch cybersecurity news using Newsdata.io API
-$newsData = [];
-$newsApiKey = 'pub_455615c3c213429ca9b287c0f7d0a3b3';
-$newsUrl = "https://newsdata.io/api/1/news?apikey=$newsApiKey&q=cybersecurity&language=en&category=technology";
-
-if ($res = @file_get_contents($newsUrl)) {
-    $parsed = json_decode($res, true);
-    if (isset($parsed['results'])) {
-        $newsData = array_slice($parsed['results'], 0, 5);
-    }
-}
+// Load stats
+include 'fetch_employee.php';
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>CyberTrone - News Feed</title>
+  <title>CyberTrone - Employee Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body class="bg-gray-900 text-white">
+<body class="bg-gray-900 text-white min-h-screen">
 
   <?php include "./include/employee_sidebar.php"; ?>
 
   <div class="content p-6 space-y-10">
-    <header class="text-center py-4">
+
+    <!-- Header -->
+    <header class="text-center">
       <h1 class="text-4xl font-bold">Welcome, <?= htmlspecialchars($emp_name) ?></h1>
       <p class="text-gray-400"><?= htmlspecialchars($emp_email) ?></p>
     </header>
 
-    <!-- Today's Cybersecurity News -->
+    <!-- Summary Cards -->
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+      <div class="bg-blue-800 p-6 rounded-lg shadow-md">
+        <h3 class="text-xl font-bold mb-2">👤 Profile</h3>
+        <p><strong>Name:</strong> <?= htmlspecialchars($employee['name']) ?></p>
+        <p><strong>Contact:</strong> <?= htmlspecialchars($employee['contact_number']) ?></p>
+      </div>
+
+      <div class="bg-green-800 p-6 rounded-lg shadow-md">
+        <h3 class="text-xl font-bold mb-2">🏢 Department</h3>
+        <p><strong>Department:</strong> <?= htmlspecialchars($employee['department_name']) ?></p>
+        <p><strong>Assigned Courses:</strong> <?= $courseCount ?></p>
+      </div>
+
+      <div class="bg-purple-800 p-6 rounded-lg shadow-md">
+        <h3 class="text-xl font-bold mb-2">📊 Stats</h3>
+        <p><strong>Quizzes Participated:</strong> <?= $quizCount ?></p>
+        <p><strong>Total Feedbacks:</strong> <?= $totalFeedbacks ?></p>
+      </div>
+    </section>
+
+    <!-- Quiz Score Summary -->
     <section class="bg-gray-800 p-6 rounded-lg shadow">
-      <h2 class="text-2xl font-semibold mb-4">🔐 Latest Cybersecurity News</h2>
-      <?php if (empty($newsData)): ?>
-        <p class="text-gray-300">Unable to fetch news currently.</p>
+      <h2 class="text-2xl font-semibold mb-4">📈 Your Quiz Performance</h2>
+      <?php if (empty($quizScores)): ?>
+        <p class="text-gray-300">No quiz data available yet.</p>
       <?php else: ?>
-        <ul class="space-y-4">
-          <?php foreach ($newsData as $article): ?>
-            <li class="border-b border-gray-700 pb-4">
-              <a href="<?= htmlspecialchars($article['link']) ?>" target="_blank" class="text-blue-400 font-medium">
-                <?= htmlspecialchars($article['title']) ?>
-              </a>
-              <p class="text-sm text-gray-400 mt-1">
-                <?= isset($article['source_id']) ? htmlspecialchars($article['source_id']) : 'Unknown Source' ?>
-                | <?= htmlspecialchars(date('F j, Y', strtotime($article['pubDate']))) ?>
-              </p>
-              <p class="text-gray-300 text-sm mt-2">
-                <?= htmlspecialchars($article['description']) ?>
-              </p>
-            </li>
+        <div class="space-y-6">
+          <?php foreach ($quizScores as $quiz): ?>
+            <div>
+              <h4 class="text-lg font-medium mb-1"><?= htmlspecialchars($quiz['title']) ?> - <?= $quiz['score'] ?>%</h4>
+              <div class="w-full bg-gray-700 rounded h-4">
+                <div class="bg-blue-500 h-4 rounded" style="width: <?= $quiz['score'] ?>%;"></div>
+              </div>
+            </div>
           <?php endforeach; ?>
-        </ul>
+        </div>
       <?php endif; ?>
     </section>
+
   </div>
 
 </body>
