@@ -37,6 +37,7 @@ if (isset($_SESSION['message'])) {
                     <th class="px-4 py-2 border">Username</th>
                     <th class="px-4 py-2 border">NIC</th>
                     <th class="px-4 py-2 border">Contact</th>
+                    <th class="px-4 py-2 border">Department Code</th>
                     <th class="px-4 py-2 border">Department</th>
                     <th class="px-4 py-2 border">Email</th>
                     <th class="px-4 py-2 border">Action Buttons</th>
@@ -51,6 +52,7 @@ if (isset($_SESSION['message'])) {
                             <td class="border px-4 py-2"><?= htmlspecialchars($emp['username']) ?></td>
                             <td class="border px-4 py-2"><?= htmlspecialchars($emp['nic']) ?></td>
                             <td class="border px-4 py-2"><?= htmlspecialchars($emp['contact_number']) ?></td>
+                            <td class="border px-4 py-2"><?= htmlspecialchars($emp['department_code']) ?></td>
                             <td class="border px-4 py-2"><?= htmlspecialchars($emp['department_name']) ?></td>
                             <td class="border px-4 py-2"><?= htmlspecialchars($emp['email']) ?></td>
                             <td class="border px-4 py-2 space-x-2">

@@ -51,13 +51,13 @@ class Employee extends Database {
     }
 
     public function getDepartments() {
-        $stmt = $this->dbh->query("SELECT id, department_name FROM departments");
+        $stmt = $this->dbh->query("SELECT id, department_code, department_name FROM departments");
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function getAllWithDepartments() {
     $stmt = $this->dbh->query("
-        SELECT employees.id, employees.name, employees.username, employees.nic, employees.contact_number, departments.department_name, employees.email
+        SELECT employees.id, employees.name, employees.username, employees.nic, employees.contact_number,departments.department_code, departments.department_name, employees.email
         FROM employees
         JOIN departments ON employees.department_id = departments.id
     ");
