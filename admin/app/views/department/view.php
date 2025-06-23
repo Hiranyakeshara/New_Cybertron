@@ -92,5 +92,7 @@ if (isset($_SESSION['push_status'])): ?>
     </div>
 </div>
 </div> <!-- End flex -->
+
+<div>  <?php include_once __DIR__ . '/department_quiz.php'; ?></div>
 </body>
 </html>
