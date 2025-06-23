@@ -1,5 +1,4 @@
 <?php
-// Connect to both databases
 $pdo = new PDO("mysql:host=localhost;dbname=cybertraining;charset=utf8mb4", "root", "");
 $cee = new PDO("mysql:host=localhost;dbname=cee_db;charset=utf8mb4", "root", "");
 
@@ -12,10 +11,9 @@ $departments = $deptStmt->fetchAll(PDO::FETCH_ASSOC);
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Department Quizzes</title>
+  <title>Department Quiz Summary</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <script>
-    // Live filter function
     function filterDepartments() {
       const input = document.getElementById("searchInput").value.toLowerCase();
       const cards = document.querySelectorAll(".department-card");
@@ -26,73 +24,84 @@ $departments = $deptStmt->fetchAll(PDO::FETCH_ASSOC);
     }
   </script>
 </head>
-<body class="bg-gray-900 text-white p-8 min-h-screen">
+<body class="bg-gray-100 text-gray-800">
 
-  <h1 class="text-3xl font-bold mb-6">📚 Department Quizzes and User Participation</h1>
+  <!-- Jumbotron -->
+  <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-12 text-center shadow-md">
+    <h1 class="text-5xl font-bold mb-2">📊 Departmental Quiz Overview</h1>
+    <p class="text-lg opacity-90">Explore course allocations, quizzes, and enrolled users by department</p>
+  </div>
 
-  <!-- Search Bar -->
-  <input type="text" id="searchInput" onkeyup="filterDepartments()" placeholder="Search department, course, or quiz..." class="mb-8 w-full p-3 rounded-lg border border-gray-600 bg-gray-800 text-white shadow">
+  <!-- Search Input -->
+  <div class="max-w-4xl mx-auto my-8 px-4">
+    <input type="text" id="searchInput" onkeyup="filterDepartments()" placeholder="🔍 Search department, course, quiz, or user..."
+      class="w-full p-3 rounded-lg border border-gray-300 bg-white shadow focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800">
+  </div>
 
-  <?php foreach ($departments as $dept): ?>
-    <?php
-    $deptCode = $dept['department_code'];
-    $deptName = $dept['department_name'];
+  <!-- Department Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-7xl mx-auto px-4 pb-10">
+    <?php foreach ($departments as $dept): ?>
+      <?php
+      $deptCode = $dept['department_code'];
+      $deptName = $dept['department_name'];
 
-    // Match department_code with course_tbl.cou_id
-    $courseStmt = $cee->prepare("SELECT * FROM course_tbl WHERE cou_id = ?");
-    $courseStmt->execute([$deptCode]);
-    $course = $courseStmt->fetch(PDO::FETCH_ASSOC);
+      $courseStmt = $cee->prepare("SELECT * FROM course_tbl WHERE cou_id = ?");
+      $courseStmt->execute([$deptCode]);
+      $course = $courseStmt->fetch(PDO::FETCH_ASSOC);
+      if (!$course) continue;
 
-    if (!$course) continue;
+      $courseId = $course['cou_id'];
+      $courseName = $course['cou_name'];
 
-    $courseId = $course['cou_id'];
-    $courseName = $course['cou_name'];
+      $quizStmt = $cee->prepare("SELECT * FROM exam_tbl WHERE cou_id = ?");
+      $quizStmt->execute([$courseId]);
+      $quizzes = $quizStmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Quizzes for this course
-    $quizStmt = $cee->prepare("SELECT * FROM exam_tbl WHERE cou_id = ?");
-    $quizStmt->execute([$courseId]);
-    $quizzes = $quizStmt->fetchAll(PDO::FETCH_ASSOC);
+      $userStmt = $cee->prepare("SELECT exmne_fullname, exmne_email FROM examinee_tbl WHERE exmne_course = ?");
+      $userStmt->execute([$courseId]);
+      $users = $userStmt->fetchAll(PDO::FETCH_ASSOC);
+      ?>
+      <div class="department-card bg-white rounded-xl p-6 shadow-lg hover:shadow-2xl border border-gray-200 transition duration-300 ease-in-out">
+        <!-- Department Header -->
+        <div class="mb-4">
+          <h2 class="text-2xl font-bold text-blue-700 mb-1">🏢 <?= htmlspecialchars($deptName) ?></h2>
+          <span class="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium mb-2">Code: <?= $deptCode ?></span><br>
+          <span class="inline-block bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-semibold mt-2">📘 Course: <?= htmlspecialchars($courseName) ?></span>
+        </div>
 
-    // Users in this course
-    $userStmt = $cee->prepare("SELECT exmne_fullname, exmne_email FROM examinee_tbl WHERE exmne_course = ?");
-    $userStmt->execute([$courseId]);
-    $users = $userStmt->fetchAll(PDO::FETCH_ASSOC);
-    ?>
+        <!-- Quizzes Section -->
+        <div class="mb-4">
+          <h3 class="text-lg font-semibold text-yellow-600 mb-1">📝 Quizzes (<?= count($quizzes) ?>)</h3>
+          <?php if (!empty($quizzes)): ?>
+            <ul class="list-disc list-inside text-sm text-gray-700 ml-3 space-y-1">
+              <?php foreach ($quizzes as $quiz): ?>
+                <li><span class="font-medium"><?= htmlspecialchars($quiz['ex_title']) ?></span></li>
+              <?php endforeach; ?>
+            </ul>
+          <?php else: ?>
+            <p class="text-sm text-gray-500 italic">No quizzes available for this course.</p>
+          <?php endif; ?>
+        </div>
 
-    <!-- Department Card -->
-    <div class="department-card bg-gray-800 rounded-lg p-6 mb-10 shadow">
-      <h2 class="text-2xl font-semibold mb-1"><?= htmlspecialchars($deptName) ?> (Code: <?= $deptCode ?>)</h2>
-      <p class="text-gray-400 mb-4">Mapped Course: <span class="font-medium"><?= htmlspecialchars($courseName) ?></span></p>
-
-      <!-- Quizzes -->
-      <div class="mb-4">
-        <h3 class="text-lg font-semibold text-yellow-300">📝 Quizzes Allocated</h3>
-        <?php if (empty($quizzes)): ?>
-          <p class="text-gray-400">No quizzes found.</p>
-        <?php else: ?>
-          <ul class="list-disc ml-6 text-gray-300">
-            <?php foreach ($quizzes as $quiz): ?>
-              <li><?= htmlspecialchars($quiz['ex_title']) ?></li>
-            <?php endforeach; ?>
-          </ul>
-        <?php endif; ?>
+        <!-- Users Section -->
+        <div>
+          <h3 class="text-lg font-semibold text-green-600 mb-1">👥 Users (<?= count($users) ?>)</h3>
+          <?php if (!empty($users)): ?>
+            <ul class="text-sm text-gray-800 max-h-32 overflow-y-auto pr-2 space-y-1 border-t border-gray-200 pt-2">
+              <?php foreach ($users as $user): ?>
+                <li class="border-b border-dashed border-gray-300 pb-1">
+                  • <span class="font-semibold"><?= htmlspecialchars($user['exmne_fullname']) ?></span>
+                  <span class="text-gray-500">(<a href="mailto:<?= htmlspecialchars($user['exmne_email']) ?>" class="underline hover:text-blue-500"><?= htmlspecialchars($user['exmne_email']) ?></a>)</span>
+                </li>
+              <?php endforeach; ?>
+            </ul>
+          <?php else: ?>
+            <p class="text-sm text-gray-500 italic">No users enrolled.</p>
+          <?php endif; ?>
+        </div>
       </div>
+    <?php endforeach; ?>
+  </div>
 
-      <!-- Users -->
-      <div>
-        <h3 class="text-lg font-semibold text-green-300">👥 Users in This Department: <?= count($users) ?></h3>
-        <?php if (empty($users)): ?>
-          <p class="text-gray-400">No users found.</p>
-        <?php else: ?>
-          <ul class="mt-2 space-y-1">
-            <?php foreach ($users as $user): ?>
-              <li class="text-sm text-gray-200">• <?= htmlspecialchars($user['exmne_fullname']) ?> (<?= htmlspecialchars($user['exmne_email']) ?>)</li>
-            <?php endforeach; ?>
-          </ul>
-        <?php endif; ?>
-      </div>
-    </div>
-
-  <?php endforeach; ?>
 </body>
 </html>

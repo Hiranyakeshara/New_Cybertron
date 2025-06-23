@@ -90,9 +90,29 @@ if (isset($_SESSION['push_status'])): ?>
             </tbody>
         </table>
     </div>
+
+       <!-- Wrapped Display for department_quiz.php -->
+    <div class="bg-white rounded-lg shadow-md p-6 mt-10">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">📊 Department Quiz Summary</h2>
+
+        <!-- Optional collapsible section -->
+        <details class="bg-gray-100 border border-gray-300 rounded p-4 open:shadow-md">
+            <summary class="cursor-pointer text-lg font-semibold text-blue-700 mb-3">
+                View All Departments' Quiz Allocation and User Count
+            </summary>
+
+            <!-- Embedded content container -->
+            <div class="mt-4 max-h-[600px] overflow-y-auto border-t border-gray-300 pt-4">
+                <?php include_once __DIR__ . '/department_quiz.php'; ?>
+            </div>
+        </details>
+    </div>
+   
 </div>
+
+
 </div> <!-- End flex -->
 
-<div>  <?php include_once __DIR__ . '/department_quiz.php'; ?></div>
+<div>  
 </body>
 </html>
