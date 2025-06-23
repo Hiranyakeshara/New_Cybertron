@@ -85,7 +85,7 @@
 
                             <button @click="openModal = true" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm">Edit</button>
 
-                            <a href="/New_Cybertron/admin/app/controllers/pushToQuiz.php?id=<?= $course['id'] ?>" class="text-white bg-green-600 hover:bg-green-700 px-4 py-2 rounded-md text-sm transition-all duration-300">Push to Quiz Platform</a>
+                           
                         </div>
 
                         <!-- Edit Modal -->
