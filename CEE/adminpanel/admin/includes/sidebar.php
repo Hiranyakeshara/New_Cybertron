@@ -37,19 +37,19 @@
                                 <li>
                                     <a href="#">
                                          <i class="metismenu-icon pe-7s-display2"></i>
-                                         Courses
+                                         Departments
                                         <i class="metismenu-state-icon pe-7s-angle-down caret-left"></i>
                                     </a>
                                     <ul>
                                         <li>
                                             <a href="#" data-toggle="modal" data-target="#modalForAddCourse">
                                                 <i class="metismenu-icon"></i>
-                                                Add Course                                            </a>
+                                                Add Department                                            </a>
                                         </li>
                                         <li>
                                             <a href="home.php?page=manage-course">
                                                 <i class="metismenu-icon">
-                                                </i>Manage Course 
+                                                </i>Manage Department 
                                             </a>
                                         </li>
                                        

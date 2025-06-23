@@ -20,7 +20,7 @@
                                 <th>Fullname</th>
                                 <th>Gender</th>
                                 <th>Birthdate</th>
-                                <th>Course</th>
+                                <th>Department</th>
                                 <th>Management level</th>
                                 <th>Email</th>
                                 <th>Password</th>
