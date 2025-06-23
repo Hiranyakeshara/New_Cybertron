@@ -11,6 +11,10 @@
       </div>
       <div class="modal-body">
         <div class="col-md-12">
+             <div class="form-group">
+            <label>Department ID</label>
+            <input type="" name="course_id" id="course_name" class="form-control" placeholder="Input Department ID" required="" autocomplete="off">
+          </div>
           <div class="form-group">
             <label>Department Name</label>
             <input type="" name="course_name" id="course_name" class="form-control" placeholder="Input Department Name" required="" autocomplete="off">
