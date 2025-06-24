@@ -28,6 +28,8 @@ function fetchFromGoPhish($url, $headers) {
         die("❌ cURL Error: " . curl_error($ch));
     }
 
+    echo "<pre style='color:red'>RAW API RESPONSE:\n" . htmlspecialchars($response) . "</pre>"; // 🧪 Print response for debugging
+
     $data = json_decode($response, true);
     if (json_last_error() !== JSON_ERROR_NONE) {
         http_response_code(500);
@@ -36,6 +38,7 @@ function fetchFromGoPhish($url, $headers) {
 
     return $data;
 }
+
 
 // Get campaigns
 $allCampaigns = fetchFromGoPhish($baseUrl, $headers);
