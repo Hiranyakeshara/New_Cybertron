@@ -8,8 +8,8 @@
     </div>
 
 <?php
-$apiKey = "3bfca2468a7982f81288b76af71d16e3005b5b294792efa9ea0990fb9e449fcb";
-$gophishBaseUrl = "https://localhost:3333/api/campaigns/";
+$apiKey = "b20973835c57000dfbe82a33bb93bb2e122ef21acb9771736e4aa0630795052a";
+$gophishBaseUrl = "https://3.93.236.247:3636/api/campaigns/";
 
 $headers = [
     "Authorization: Bearer $apiKey",
@@ -116,7 +116,10 @@ if ($httpCode !== 200 || !is_array($campaigns)) {
                 </tbody>
             </table>
         </div>
+    
     </div>
 <?php endforeach; ?>
 </div>
 </div>
+
+

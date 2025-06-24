@@ -54,6 +54,8 @@
           </button>
           <div x-show="open" class="pl-4 mt-1 space-y-1" x-transition>
             <a href="/New_Cybertron/admin/public/campaigns/" class="block py-2 px-4 rounded hover:bg-gray-600">📈 View Results</a>
+            <a href="/New_Cybertron/admin/public/campaigns/create" class="block py-2 px-4 rounded hover:bg-gray-600"> 🎯 Create Campaigns</a>
+            <a href="/New_Cybertron/admin/public/campaigns/user" class="block py-2 px-4 rounded hover:bg-gray-600">👥 Create User Groups</a>
           </div>
         </div>
 
