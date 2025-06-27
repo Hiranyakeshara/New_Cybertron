@@ -4,7 +4,7 @@
 <?php
 $apiKey = "b20973835c57000dfbe82a33bb93bb2e122ef21acb9771736e4aa0630795052a";
 $apiHost = "https://3.93.236.247:3636/api";
-$staticPhishURL = "https://3.93.236.247/";
+$staticPhishURL = "http://3.93.236.247/";
 
 // Helper to fetch dropdown data
 function fetchApiList($endpoint, $apiKey) {

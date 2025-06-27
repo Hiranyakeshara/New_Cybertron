@@ -1,4 +1,7 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 session_start();
 
 // ======== Session Check ========
@@ -11,15 +14,15 @@ $employeeEmail = $_SESSION['employee_email'];
 
 // ======== GoPhish API Config ========
 $apiKey = "b20973835c57000dfbe82a33bb93bb2e122ef21acb9771736e4aa0630795052a";
-$apiUrl = "https://3.93.236.247:3636/api/campaigns/";
+$apiBaseUrl = "https://3.93.236.247:3636/api/campaigns/";
 
 $headers = [
     "Authorization: Bearer $apiKey",
     "Content-Type: application/json"
 ];
 
-// ======== Fetch Campaigns Function ========
-function fetchCampaignData($url, $headers) {
+// ======== cURL Helper ========
+function callGoPhishAPI($url, $headers) {
     $ch = curl_init($url);
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
@@ -35,7 +38,7 @@ function fetchCampaignData($url, $headers) {
 
     if ($response === false || $httpCode !== 200) {
         return [
-            "error" => "❌ Failed to fetch campaigns. HTTP: $httpCode - cURL: $curlError",
+            "error" => "HTTP $httpCode | cURL: $curlError",
             "raw_response" => $response
         ];
     }
@@ -43,7 +46,7 @@ function fetchCampaignData($url, $headers) {
     $data = json_decode($response, true);
     if (json_last_error() !== JSON_ERROR_NONE) {
         return [
-            "error" => "❌ JSON Decode Error: " . json_last_error_msg(),
+            "error" => "JSON Decode Error: " . json_last_error_msg(),
             "raw_response" => $response
         ];
     }
@@ -51,30 +54,46 @@ function fetchCampaignData($url, $headers) {
     return $data;
 }
 
-// ======== Process Campaign Data ========
-$apiData = fetchCampaignData($apiUrl, $headers);
+// ======== Fetch All Campaigns ========
+$allCampaigns = callGoPhishAPI($apiBaseUrl, $headers);
 $filteredCampaigns = [];
 
-if (!isset($apiData['error'])) {
-    foreach ($apiData as $campaign) {
-        if (!isset($campaign['results']) || !is_array($campaign['results'])) continue;
+if (!isset($allCampaigns['error']) && is_array($allCampaigns)) {
+    foreach ($allCampaigns as $campaign) {
+        $campaignId = $campaign['id'] ?? null;
+        $campaignName = $campaign['name'] ?? 'Unnamed Campaign';
 
-        foreach ($campaign['results'] as $result) {
-            if (!isset($result['email']) || strtolower($result['email']) !== strtolower($employeeEmail)) continue;
+        if (!$campaignId) continue;
 
-            if (!empty($result['clicked']) || !empty($result['submitted_data'])) {
-                $status = !empty($result['submitted_data']) ? "Credentials Submitted" : "Link Clicked";
+        // ======== Fetch Campaign Results ========
+        $resultUrl = $apiBaseUrl . $campaignId . "/results";
+        $campaignResults = callGoPhishAPI($resultUrl, $headers);
 
-                $filteredCampaigns[] = [
-                    "campaign_id"   => $campaign['id'] ?? 'N/A',
-                    "campaign_name" => $campaign['name'] ?? 'N/A',
-                    "status"        => $status,
-                    "send_date"     => $result['send_date'] ?? 'N/A',
-                    "ip"            => $result['ip'] ?? 'N/A',
-                    "reported"      => !empty($result['reported']) ? 'Yes' : 'No'
-                ];
+        if (isset($campaignResults['error']) || !isset($campaignResults['results'])) continue;
+
+        foreach ($campaignResults['results'] as $result) {
+            if (!isset($result['email'])) continue;
+
+            if (strtolower($result['email']) === strtolower($employeeEmail)) {
+                $status = strtolower($result['status'] ?? '');
+
+                // Only include if status is "clicked link" or "submitted data"
+                if ($status === 'clicked link' || $status === 'submitted data') {
+                    $filteredCampaigns[] = [
+                        "campaign_name" => $campaignName,
+                        "status"        => $result['status'] ?? 'N/A',
+                        "ip"            => $result['ip'] ?? 'N/A',
+                        "send_date"     => $result['send_date'] ?? 'N/A',
+                        "reported"      => !empty($result['reported']) ? 'Yes' : 'No'
+                    ];
+                }
             }
         }
+    }
+} else {
+    echo "<p style='color:red;'>❌ Error fetching campaigns list.</p>";
+    if (isset($allCampaigns['error'])) {
+        echo "<pre>" . htmlspecialchars($allCampaigns['error']) . "</pre>";
     }
 }
 ?>
@@ -83,54 +102,45 @@ if (!isset($apiData['error'])) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>CyberTrone - My Profile</title>
+    <title>CyberTrone - My Email Campaign Results</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <style>
-        body { background-color: #1F2937; font-family: 'Arial', sans-serif; display: flex; min-height: 100vh; }
-        .header-nav { background-color: #111827; }
-        .header-nav a { color: white; font-weight: bold; text-transform: uppercase; }
+        body { background-color: #1F2937; font-family: Arial, sans-serif; display: flex; min-height: 100vh; }
         .content { margin-left: 250px; padding: 20px; width: 100%; }
         .card {
             background-color: #2D3748;
             padding: 20px;
             border-radius: 10px;
-            box-shadow: 0px 4px 10px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
-        .card h2 { color: #10B981; font-size: 22px; margin-bottom: 15px; }
-        .card p { color: #CBD5E1; margin-bottom: 10px; }
-        .card span { color: #F9FAFB; font-weight: bold; }
+        .card h2 { color: #10B981; margin-bottom: 10px; }
+        .card p { color: #CBD5E1; }
     </style>
 </head>
-
 <body>
 <?php include_once("./include/employee_sidebar.php"); ?>
 
 <div class="content">
-    <h1 class="text-white text-3xl font-bold mb-6">Phishing Campaign Summary</h1>
+    <h1 class="text-white text-3xl font-bold mb-6">Phishing Campaign Results for: <?= htmlspecialchars($employeeEmail) ?></h1>
 
-    <?php if (isset($apiData['error'])): ?>
-        <div class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg border border-red-400">
-            <?= htmlspecialchars($apiData['error']) ?>
-        </div>
-    <?php elseif (count($filteredCampaigns) === 0): ?>
+    <?php if (empty($filteredCampaigns)): ?>
         <div class="p-6 text-center bg-green-800 text-green-100 rounded-lg shadow-lg">
-            🎉 <strong>Good news!</strong> You were <span class="text-white underline">not targeted</span> by any phishing campaign. Stay vigilant and keep up the great work! 🛡️
+            🎉 No Click or Submission activity found for your email.
         </div>
     <?php else: ?>
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             <?php foreach ($filteredCampaigns as $campaign): ?>
                 <div class="card">
                     <h2><?= htmlspecialchars($campaign['campaign_name']) ?></h2>
-                    <p><span>Status:</span> <?= $campaign['status'] ?></p>
-                    <p><span>Send Date:</span> <?= $campaign['send_date'] ?></p>
-                    <p><span>IP Address:</span> <?= $campaign['ip'] ?></p>
-                    <p><span>Reported:</span> <?= $campaign['reported'] ?></p>
+                    <p><strong>Status:</strong> <?= htmlspecialchars($campaign['status']) ?></p>
+                    <p><strong>Send Date:</strong> <?= htmlspecialchars($campaign['send_date']) ?></p>
+                    <p><strong>IP Address:</strong> <?= htmlspecialchars($campaign['ip']) ?></p>
+                    <p><strong>Reported:</strong> <?= htmlspecialchars($campaign['reported']) ?></p>
                 </div>
             <?php endforeach; ?>
         </div>
     <?php endif; ?>
 </div>
-
 </body>
 </html>
